@@ -8,12 +8,14 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
+import com.typesafe.scalalogging.Logger
 
 
 object Service {
 
   val interface = "::0"
   val port = 8080
+  val logger = Logger("mini-search-service")
 
   implicit val system = ActorSystem("my-system")
   implicit val materializer = ActorMaterializer()
@@ -32,7 +34,7 @@ object Service {
 
   def main(args: Array[String]): Unit = {
     Http().bindAndHandle(routes, interface, port)
-    println(s"MiniSearch Server running at http://localhost:$port")
+    logger.info(s"MiniSearch Server running at http://localhost:$port")
   }
 
 }
