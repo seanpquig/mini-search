@@ -2,8 +2,9 @@ package org.seanpquig.mini.search
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import org.seanpquig.mini.search.core.{JsonSupport, SearchResponse}
 
-object Routes {
+object Routes extends JsonSupport {
 
   def all: Route = {
     pathSingleSlash {
@@ -13,17 +14,17 @@ object Routes {
 
   def searchRoutes: Route = {
     path("search" / Segment) { idxName =>
-      complete(s"Searching index: $idxName")
+      complete(SearchResponse(docs = List()))
     }
   }
 
   def indexingRoutes: Route = {
-    path("index" / Segment) { name =>
+    path("index" / Segment) { idxName =>
       get {
-        complete(s"Index info for $name")
+        complete(s"Index info for $idxName")
       } ~
       post {
-        complete(s"Create index: $name")
+        complete(s"Create index: $idxName")
       }
     }
   }
