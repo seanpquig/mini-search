@@ -11,10 +11,10 @@ import spray.json.{DefaultJsonProtocol, RootJsonFormat}
 //JSON support that can be utilized in routes
 trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val searchRequestFormat: RootJsonFormat[SearchRequest] = jsonFormat2(SearchRequest)
-  implicit val searchResponseFormat: RootJsonFormat[SearchResponse] = jsonFormat1(SearchResponse)
   implicit val documentFormat: RootJsonFormat[Document] = jsonFormat3(Document)
+  implicit val searchResponseFormat: RootJsonFormat[SearchResponse] = jsonFormat2(SearchResponse)
 }
 
-case class SearchRequest(queryTerm: String, limit: Int)
+case class SearchRequest(query: String, limit: Int)
 
-case class SearchResponse(docs: Seq[Document])
+case class SearchResponse(message: String, docs: Iterable[Document])

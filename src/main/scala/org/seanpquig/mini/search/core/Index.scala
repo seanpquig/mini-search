@@ -6,8 +6,26 @@ case class Term(token: String) {
 
 case class PostingsList(docsIds: Set[String])
 
-class Index(name: String, termDictionary: Map[Term, PostingsList], docStore: DocumentStore) {
+case class Index(name: String, docs: Seq[Document]) {
 
-  def search(query: String): Seq[Document] = Seq()
+  private val docStore: DocumentStore = new DocumentStore(docs)
+
+  // build term dictionary from documents
+  private val termDictionary: Map[Term, PostingsList] = {
+    docs.flatMap(doc =>
+      doc.text.split("\\s+")
+        .map(token => (Term(token), doc.id))
+    )
+    .groupBy(_._1)
+    .map { case (term, pairs) =>
+      term -> PostingsList(pairs.map(_._2).toSet)
+    }
+  }
+
+  def search(query: String): Iterable[Document] = {
+    val queryTerm = Term(query)
+    val hitIds = termDictionary.get(queryTerm).map(_.docsIds).getOrElse(Set())
+    docStore.getDocs(hitIds)
+  }
 
 }

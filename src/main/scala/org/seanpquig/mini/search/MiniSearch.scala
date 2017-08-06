@@ -8,10 +8,27 @@ import org.seanpquig.mini.search.core.{Document, Index}
   */
 object MiniSearch {
 
+  private val testIndex = Index(
+    name = "test-index",
+    docs = List(
+      Document("The cat in the hat jumped over the hill.", title = Option("The Cat in the Hat")),
+      Document("Cute animals everywhere; cats, dogs, lambs."),
+      Document("Are we over the proverbial quantitative easing hill?")
+    )
+  )
+
   private val indexLookup: Map[String, Index] = loadIndices
 
-  private def loadIndices: Map[String, Index] = Map()
+  private def loadIndices: Map[String, Index] = Map(testIndex.name -> testIndex)
 
-  def search(idxName: String, query: String): Seq[Document] = indexLookup(idxName).search(query)
+  /**
+    * Search an index by name. None result implies that index does not exist.
+    * @param idxName
+    * @param query
+    * @return optional result documents
+    */
+  def search(idxName: String, query: String): Option[Iterable[Document]] = {
+    indexLookup.get(idxName).map(_.search(query))
+  }
 
 }

@@ -13,7 +13,7 @@ object Service {
   val port = 8080
   val logger = Logger("mini-search-service")
 
-  implicit val system = ActorSystem("my-system")
+  implicit val system = ActorSystem("mini-search-system")
   implicit val materializer = ActorMaterializer()
   implicit val ec: ExecutionContext = system.dispatcher
 

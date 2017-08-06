@@ -2,9 +2,12 @@ package org.seanpquig.mini.search
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import org.seanpquig.mini.search.core.{JsonSupport, SearchResponse}
+import com.typesafe.scalalogging.Logger
+import org.seanpquig.mini.search.core.{JsonSupport, SearchRequest, SearchResponse}
 
 object Routes extends JsonSupport {
+
+  val logger = Logger("mini-search-routes")
 
   def all: Route = {
     pathSingleSlash {
@@ -14,7 +17,16 @@ object Routes extends JsonSupport {
 
   def searchRoutes: Route = {
     path("search" / Segment) { idxName =>
-      complete(SearchResponse(docs = List()))
+      post {
+        entity(as[SearchRequest]) { request =>
+          // Attempt to search against index
+          val docsOpt = MiniSearch.search(idxName, request.query)
+          val response = docsOpt.map(SearchResponse(s"Successful search against $idxName", _))
+            .getOrElse(SearchResponse(s"Index $idxName does not exist.", List()))
+
+          complete(response)
+        }
+      }
     }
   }
 
