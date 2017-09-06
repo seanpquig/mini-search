@@ -21,7 +21,8 @@ object Routes extends JsonSupport {
         entity(as[SearchRequest]) { request =>
           // Attempt to search against index
           val docsOpt = MiniSearch.search(idxName, request.query)
-          val response = docsOpt.map(SearchResponse(s"Successful search against $idxName", _))
+          val response = docsOpt.map(_.take(request.limit))
+            .map(SearchResponse(s"Successful search against $idxName", _))
             .getOrElse(SearchResponse(s"Index $idxName does not exist.", List()))
 
           complete(response)
