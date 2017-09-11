@@ -31,4 +31,6 @@ object MiniSearch {
     indexLookup.get(idxName).map(_.search(query))
   }
 
+  def index(idxName: String, docs: Iterable[Document]) = ???
+
 }

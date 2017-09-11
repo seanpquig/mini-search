@@ -3,7 +3,7 @@ package org.seanpquig.mini.search
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import com.typesafe.scalalogging.Logger
-import org.seanpquig.mini.search.core.{JsonSupport, SearchRequest, SearchResponse}
+import org.seanpquig.mini.search.core.{IndexRequest, JsonSupport, SearchRequest, SearchResponse}
 
 object Routes extends JsonSupport {
 
@@ -37,7 +37,9 @@ object Routes extends JsonSupport {
         complete(s"Index info for $idxName")
       } ~
       post {
-        complete(s"Create index: $idxName")
+        entity(as[IndexRequest]) { request =>
+          complete(s"Create index: $idxName")
+        }
       }
     }
   }
