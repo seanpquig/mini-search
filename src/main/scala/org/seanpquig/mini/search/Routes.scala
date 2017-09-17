@@ -3,7 +3,7 @@ package org.seanpquig.mini.search
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import com.typesafe.scalalogging.Logger
-import org.seanpquig.mini.search.core.{IndexRequest, JsonSupport, SearchRequest, SearchResponse}
+import org.seanpquig.mini.search.core._
 
 object Routes extends JsonSupport {
 

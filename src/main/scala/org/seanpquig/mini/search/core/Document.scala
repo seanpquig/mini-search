@@ -2,16 +2,21 @@ package org.seanpquig.mini.search.core
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 
-import scala.util.Random
+import scala.util.hashing.MurmurHash3
 
 import com.typesafe.config.{Config, ConfigFactory}
 import org.rocksdb.RocksDB
 
 case class Document(
-  text: String,
-  id: String = Random.alphanumeric.take(16).mkString,
-  title: Option[String] = None
-)
+    text: String,
+    title: Option[String] = None) {
+
+  val id: String = {
+    val stringToHash = s"${title.getOrElse("")}^%&$text"
+    val hash = MurmurHash3.stringHash(stringToHash)
+    Math.abs(hash).toString
+  }
+}
 
 case class DocumentStore(docs: Seq[Document]) {
   import DocumentStore._
@@ -19,8 +24,6 @@ case class DocumentStore(docs: Seq[Document]) {
   for (doc <- docs) {
     putDoc(doc)
   }
-
-  private val docLookup: Map[String, Document] = docs.map(doc => (doc.id, doc)).toMap
 
   def getDocs(ids: Iterable[String]): Iterable[Document] = ids.flatMap(getDoc)
 
