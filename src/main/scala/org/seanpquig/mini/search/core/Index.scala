@@ -4,27 +4,42 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, 
 
 import com.typesafe.config.{Config, ConfigFactory}
 import org.rocksdb.RocksDB
+import org.seanpquig.mini.search.core.analyzers.{Analyzer, AnalyzerPipeline, StandardAnalyzer}
 
 case class Term(token: String)
 
+// Class backed by underlying Set of Document Ids
 case class PostingsList(docsIds: Set[String] = Set()) {
   def ++(other: PostingsList): PostingsList = PostingsList(docsIds ++ other.docsIds)
 }
 
-case class Index(name: String, docs: Seq[Document]) {
+/**
+  * Represents a search index that powers full-text search and document indexing and retrieval
+  * @param name index name
+  * @param docs initial documents to include in index
+  * @param analyzers sequence of analyzers to apply to text in queries and document indexing
+  */
+case class Index(
+    name: String,
+    docs: Seq[Document],
+    analyzers: Seq[Analyzer] = Seq(StandardAnalyzer())) extends DocumentAddable {
 
-  private val docStore: DocumentStore = DocumentStore(docs)
-  private val termDictionary = TermDictionary(docs)
+  private val docStore: DocumentStore = DocumentStore()
+  private val analyzerPipeline = AnalyzerPipeline(analyzers)
+  private val termDictionary = TermDictionary(analyzerPipeline = analyzerPipeline)
+
+  // Add constructor documents
+  addDocs(docs)
 
   def search(query: String): Iterable[Document] = {
-    val queryTerm = Term(query)
-    val postings = termDictionary.getPostings(queryTerm)
+    val queryTerms = analyzerPipeline.analyze(query)
+    val postings = termDictionary.getPostings(queryTerms)
     docStore.getDocs(postings.docsIds)
   }
 
   def addDoc(doc: Document): Unit = {
     // add to document store
-    docStore.putDoc(doc)
+    docStore.addDoc(doc)
 
     // update term dictionary
     termDictionary.addDoc(doc)
@@ -32,23 +47,38 @@ case class Index(name: String, docs: Seq[Document]) {
 
 }
 
-case class TermDictionary(docs: Seq[Document]) {
+/**
+  * Data Structure that supports retrieval of PostingsLists of matching document IDs given a search Term.
+  * It is backed by the persistent key-value store RocksDB.
+  * @param docs initial documents to include in dictionary
+  * @param analyzerPipeline pipeline of analyzers to apply during document addition
+  */
+case class TermDictionary(
+    docs: Seq[Document] = Seq(),
+    analyzerPipeline: AnalyzerPipeline) extends DocumentAddable {
   import TermDictionary._
 
-  for (doc <- docs) {
-    addDoc(doc)
-  }
+  // Add constructor documents
+  addDocs(docs)
 
   def addDoc(doc: Document): Unit = {
-    val termPostingsMap = doc.text.split("\\s+").map(token => (Term(token), doc.id))
+    val termPostingsMap: Map[Term, PostingsList] = analyzerPipeline.analyze(doc.text)
+      .map(term => (term, doc.id))
       .groupBy(_._1)
-      .map { case (term, pairs) =>
-        term -> PostingsList(pairs.map(_._2).toSet)
+      .map { case (term, termIdPairs) =>
+        term -> PostingsList(termIdPairs.map(_._2).toSet)
       }
 
     for ((term, postings) <- termPostingsMap) {
       val priorPostings = getPostings(term)
       putPostings(term, priorPostings ++ postings)
+    }
+  }
+
+  def getPostings(terms: Seq[Term]): PostingsList = {
+    terms match {
+      case Nil => PostingsList()
+      case _ => terms.map(getPostings).reduce(_ ++ _)
     }
   }
 

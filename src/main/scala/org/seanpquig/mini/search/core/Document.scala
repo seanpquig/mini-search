@@ -18,12 +18,27 @@ case class Document(
   }
 }
 
-case class DocumentStore(docs: Seq[Document]) {
+// interface for the ability to add Documents to an object
+trait DocumentAddable {
+  def addDocs(docs: Seq[Document]): Unit = {
+    for (doc <- docs) {
+      addDoc(doc)
+    }
+  }
+
+  def addDoc(doc: Document): Unit
+}
+
+/**
+  * Key-value lookup that supports document retrieval by document ID.
+  * It is backed by the persistent key-value store RocksDB.
+  * @param docs initial documents to include in store
+  */
+case class DocumentStore(docs: Seq[Document] = Seq()) extends DocumentAddable {
   import DocumentStore._
 
-  for (doc <- docs) {
-    putDoc(doc)
-  }
+  // Add constructor documents
+  addDocs(docs)
 
   def getDocs(ids: Iterable[String]): Iterable[Document] = ids.flatMap(getDoc)
 
@@ -36,7 +51,7 @@ case class DocumentStore(docs: Seq[Document]) {
     }
   }
 
-  def putDoc(doc: Document): Unit = {
+  def addDoc(doc: Document): Unit = {
     val stream = new ByteArrayOutputStream()
     val oos = new ObjectOutputStream(stream)
     oos.writeObject(doc)
