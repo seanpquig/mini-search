@@ -60,7 +60,6 @@ case class DocumentStore(docs: Seq[Document] = Seq()) extends DocumentAddable {
     // put doc in RocksDB
     db.put(doc.id.getBytes, stream.toByteArray)
   }
-
 }
 
 object DocumentStore {

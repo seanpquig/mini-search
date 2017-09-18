@@ -44,7 +44,6 @@ case class Index(
     // update term dictionary
     termDictionary.addDoc(doc)
   }
-
 }
 
 /**
@@ -60,20 +59,6 @@ case class TermDictionary(
 
   // Add constructor documents
   addDocs(docs)
-
-  def addDoc(doc: Document): Unit = {
-    val termPostingsMap: Map[Term, PostingsList] = analyzerPipeline.analyze(doc.text)
-      .map(term => (term, doc.id))
-      .groupBy(_._1)
-      .map { case (term, termIdPairs) =>
-        term -> PostingsList(termIdPairs.map(_._2).toSet)
-      }
-
-    for ((term, postings) <- termPostingsMap) {
-      val priorPostings = getPostings(term)
-      putPostings(term, priorPostings ++ postings)
-    }
-  }
 
   def getPostings(terms: Seq[Term]): PostingsList = {
     terms match {
@@ -91,6 +76,20 @@ case class TermDictionary(
     }.getOrElse(PostingsList())
   }
 
+  def addDoc(doc: Document): Unit = {
+    val termPostingsMap: Map[Term, PostingsList] = analyzerPipeline.analyze(doc.text)
+      .map(term => (term, doc.id))
+      .groupBy(_._1)
+      .map { case (term, termIdPairs) =>
+        term -> PostingsList(termIdPairs.map(_._2).toSet)
+      }
+
+    for ((term, postings) <- termPostingsMap) {
+      val priorPostings = getPostings(term)
+      putPostings(term, priorPostings ++ postings)
+    }
+  }
+
   def putPostings(term: Term, postings: PostingsList): Unit = {
     val stream = new ByteArrayOutputStream()
     val oos = new ObjectOutputStream(stream)
@@ -100,7 +99,6 @@ case class TermDictionary(
     // put postings in RocksDB
     db.put(term.token.getBytes, stream.toByteArray)
   }
-
 }
 
 object TermDictionary {
