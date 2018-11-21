@@ -28,6 +28,8 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   }
   implicit val searchResponseFormat: RootJsonFormat[SearchResponse] = jsonFormat2(SearchResponse)
   implicit val indexRequestFormat: RootJsonFormat[IndexRequest] = jsonFormat1(IndexRequest)
+  implicit val indexInfoFormat: RootJsonFormat[IndexInfo] = jsonFormat2(IndexInfo)
+  implicit val indicesResponseFormat: RootJsonFormat[IndicesResponse] = jsonFormat1(IndicesResponse)
 }
 
 case class SearchRequest(query: String, limit: Int)
@@ -37,3 +39,6 @@ case class SearchResponse(message: String, docs: Iterable[Document])
 case class IndexRequest(docs: Iterable[Document])
 
 case class IndexResponse(message: String)
+
+case class IndexInfo(name: String, docCount: Long)
+case class IndicesResponse(indices: Iterable[IndexInfo])

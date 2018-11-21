@@ -15,7 +15,7 @@ object Routes extends JsonSupport {
     } ~ searchRoutes ~ indexingRoutes
   }
 
-  def searchRoutes: Route = {
+  def searchRoutes: Route = ignoreTrailingSlash {
     path("search" / Segment) { idxName =>
       post {
         entity(as[SearchRequest]) { request =>
@@ -31,7 +31,7 @@ object Routes extends JsonSupport {
     }
   }
 
-  def indexingRoutes: Route = {
+  def indexingRoutes: Route = ignoreTrailingSlash {
     path("index" / Segment) { idxName =>
       get {
         complete(s"Index info for $idxName")
@@ -40,6 +40,11 @@ object Routes extends JsonSupport {
         entity(as[IndexRequest]) { request =>
           complete(s"Create index: $idxName")
         }
+      }
+    } ~
+    path("indices") {
+      get {
+        complete(MiniSearch.indicesResponse())
       }
     }
   }

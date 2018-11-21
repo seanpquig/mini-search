@@ -1,6 +1,6 @@
 package org.seanpquig.mini.search
 
-import org.seanpquig.mini.search.core.{Document, Index}
+import org.seanpquig.mini.search.core.{Document, Index, IndexInfo, IndicesResponse}
 
 /**
   * Entry point into all aspects and behavior of the search engine.
@@ -17,9 +17,9 @@ object MiniSearch {
     )
   )
 
-  private val indexLookup: Map[String, Index] = loadIndices
+  private val indexLookup: Map[String, Index] = loadIndices()
 
-  private def loadIndices: Map[String, Index] = Map(testIndex.name -> testIndex)
+  private def loadIndices(): Map[String, Index] = Map(testIndex.name -> testIndex)
 
   /**
     * Search an index by name. None result implies that index does not exist.
@@ -32,5 +32,11 @@ object MiniSearch {
   }
 
   def index(idxName: String, docs: Iterable[Document]) = ???
+
+  def indicesResponse(): IndicesResponse = IndicesResponse(
+    indexLookup.map { case (_, idx) =>
+      IndexInfo(name = idx.name, idx.docs.length)
+    }
+  )
 
 }
