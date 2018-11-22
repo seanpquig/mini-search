@@ -43,9 +43,7 @@ object Routes extends JsonSupport {
       }
     } ~
     path("indices") {
-      get {
-        complete(MiniSearch.indicesResponse())
-      }
+      complete(MiniSearch.indicesResponse())
     }
   }
 
