@@ -6,10 +6,14 @@ import org.nd4j.linalg.api.ndarray.INDArray
 
 class ImageVisionTagger(modelPath: String) {
 
-  private val model: ComputationGraph = KerasModelImport.importKerasModelAndWeights(modelPath)
+  private val model: ComputationGraph = KerasModelImport.importKerasModelAndWeights(
+    modelPath,
+    Array(299, 299, 3),
+    false
+  )
 
   def predictTags(imgArray: INDArray): Array[Double] = {
-    model.output(imgArray).flatMap(_.toDoubleVector)
+    model.outputSingle(imgArray).toDoubleVector
   }
 
 }
