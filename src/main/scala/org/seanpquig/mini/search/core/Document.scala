@@ -2,10 +2,10 @@ package org.seanpquig.mini.search.core
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 
-import scala.util.hashing.MurmurHash3
-
-import com.typesafe.config.{Config, ConfigFactory}
 import org.rocksdb.RocksDB
+import org.seanpquig.mini.search.Config
+
+import scala.util.hashing.MurmurHash3
 
 sealed trait Document {
   val id: String
@@ -67,9 +67,6 @@ case class DocumentStore(docs: Seq[TextDoc] = Seq()) extends DocumentAddable {
 }
 
 object DocumentStore {
-  val config: Config = ConfigFactory.load()
-  val dataDir: String = config.getString("dataDir")
-
   // Setup RocksDB
-  val db: RocksDB = RocksDB.open(s"$dataDir/doc_stores")
+  val db: RocksDB = RocksDB.open(s"${Config.dataDir}/doc_stores")
 }

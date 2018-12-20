@@ -2,8 +2,8 @@ package org.seanpquig.mini.search.core
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 
-import com.typesafe.config.{Config, ConfigFactory}
 import org.rocksdb.RocksDB
+import org.seanpquig.mini.search.Config
 import org.seanpquig.mini.search.core.analyzers.{Analyzer, AnalyzerPipeline, StandardAnalyzer}
 
 case class Term(token: String)
@@ -103,9 +103,6 @@ case class TermDictionary(
 }
 
 object TermDictionary {
-  val config: Config = ConfigFactory.load()
-  val dataDir: String = config.getString("dataDir")
-
   // Setup RocksDB
-  val db: RocksDB = RocksDB.open(s"$dataDir/term_dictionaries")
+  val db: RocksDB = RocksDB.open(s"${Config.dataDir}/term_dictionaries")
 }

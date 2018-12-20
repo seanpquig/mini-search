@@ -18,5 +18,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.scala-logging" %% "scala-logging" % "3.7.1",
   "org.rocksdb" % "rocksdbjni" % "5.7.3",
   "org.deeplearning4j" % "deeplearning4j-core" % deepLearning4jVersion,
-  "org.deeplearning4j" % "deeplearning4j-modelimport" % deepLearning4jVersion
+  "org.deeplearning4j" % "deeplearning4j-modelimport" % deepLearning4jVersion,
+  "org.nd4j" % "nd4j-native-platform" % deepLearning4jVersion
 )
