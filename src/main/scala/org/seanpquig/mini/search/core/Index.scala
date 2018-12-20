@@ -31,7 +31,7 @@ case class Index(
   // Add constructor documents
   addDocs(docs)
 
-  def search(query: String): Iterable[Document] = {
+  def search(query: String): Iterable[TextDoc] = {
     val queryTerms = analyzerPipeline.analyze(query)
     val postings = termDictionary.getPostings(queryTerms)
     docStore.getDocs(postings.docsIds)
@@ -77,8 +77,9 @@ case class TermDictionary(
   }
 
   def addDoc(doc: Document): Unit = {
-    val termPostingsMap: Map[Term, PostingsList] = analyzerPipeline.analyze(doc.text)
-      .map(term => (term, doc.id))
+    val termPostingsMap: Map[Term, PostingsList] = (doc match {
+      case TextDoc(text, _) => analyzerPipeline.analyze(text)
+    }).map(term => (term, doc.id))
       .groupBy(_._1)
       .map { case (term, termIdPairs) =>
         term -> PostingsList(termIdPairs.map(_._2).toSet)

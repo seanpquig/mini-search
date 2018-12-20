@@ -12,16 +12,16 @@ import spray.json._
 trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val searchRequestFormat: RootJsonFormat[SearchRequest] = jsonFormat2(SearchRequest)
 
-  implicit object DocumentJsonFormat extends RootJsonFormat[Document] {
-    def write(d: Document) = JsObject(
+  implicit object TextDocJsonFormat extends RootJsonFormat[TextDoc] {
+    def write(d: TextDoc) = JsObject(
       "id" -> JsString(d.id),
       "text" -> JsString(d.text),
       "title" -> JsString(d.title.getOrElse(""))
     )
 
-    def read(value: JsValue): Document = {
+    def read(value: JsValue): TextDoc = {
       value.asJsObject.getFields("text", "title") match {
-        case Seq(JsString(text), JsString(title)) => Document(text = text, title = Option(title))
+        case Seq(JsString(text), JsString(title)) => TextDoc(text = text, title = Option(title))
         case _ => deserializationError("Document object expected")
       }
     }
@@ -34,9 +34,9 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
 
 case class SearchRequest(query: String, limit: Int)
 
-case class SearchResponse(message: String, docs: Iterable[Document])
+case class SearchResponse(message: String, docs: Iterable[TextDoc])
 
-case class IndexRequest(docs: Iterable[Document])
+case class IndexRequest(docs: Iterable[TextDoc])
 
 case class IndexResponse(message: String)
 

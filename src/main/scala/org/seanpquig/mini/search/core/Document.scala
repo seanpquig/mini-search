@@ -7,11 +7,15 @@ import scala.util.hashing.MurmurHash3
 import com.typesafe.config.{Config, ConfigFactory}
 import org.rocksdb.RocksDB
 
-case class Document(
-    text: String,
-    title: Option[String] = None) {
+sealed trait Document {
+  val id: String
+}
 
-  val id: String = {
+case class TextDoc(
+    text: String,
+    title: Option[String] = None) extends Document {
+
+  override val id: String = {
     val stringToHash = s"${title.getOrElse("")}^%&$text"
     val hash = MurmurHash3.stringHash(stringToHash)
     Math.abs(hash).toString
@@ -34,18 +38,18 @@ trait DocumentAddable {
   * It is backed by the persistent key-value store RocksDB.
   * @param docs initial documents to include in store
   */
-case class DocumentStore(docs: Seq[Document] = Seq()) extends DocumentAddable {
+case class DocumentStore(docs: Seq[TextDoc] = Seq()) extends DocumentAddable {
   import DocumentStore._
 
   // Add constructor documents
   addDocs(docs)
 
-  def getDocs(ids: Iterable[String]): Iterable[Document] = ids.flatMap(getDoc)
+  def getDocs(ids: Iterable[String]): Iterable[TextDoc] = ids.flatMap(getDoc)
 
-  def getDoc(id: String): Option[Document] = {
+  def getDoc(id: String): Option[TextDoc] = {
     Option(db.get(id.getBytes)).map { bytes =>
       val ois = new ObjectInputStream(new ByteArrayInputStream(bytes))
-      val doc = ois.readObject().asInstanceOf[Document]
+      val doc = ois.readObject().asInstanceOf[TextDoc]
       ois.close()
       doc
     }
