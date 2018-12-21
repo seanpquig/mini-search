@@ -1,6 +1,7 @@
 package org.seanpquig.mini.search.core
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import org.seanpquig.mini.search.ml.ImagenetPrediction
 import spray.json._
 
 /**
@@ -26,10 +27,12 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
       }
     }
   }
+
   implicit val searchResponseFormat: RootJsonFormat[SearchResponse] = jsonFormat2(SearchResponse)
   implicit val indexRequestFormat: RootJsonFormat[IndexRequest] = jsonFormat1(IndexRequest)
   implicit val indexInfoFormat: RootJsonFormat[IndexInfo] = jsonFormat2(IndexInfo)
   implicit val indicesResponseFormat: RootJsonFormat[IndicesResponse] = jsonFormat1(IndicesResponse)
+  implicit val imagenetPredFormat: RootJsonFormat[ImagenetPrediction] = jsonFormat3(ImagenetPrediction)
 }
 
 case class SearchRequest(query: String, limit: Int)

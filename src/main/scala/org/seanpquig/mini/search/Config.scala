@@ -7,4 +7,5 @@ object Config {
 
   val dataDir: String = config.getString("dataDir")
   val modelPath: String = config.getString("modelPath")
+  val imagenetClassPath: String = config.getString("imagenetClassPath")
 }

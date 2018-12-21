@@ -13,6 +13,6 @@ def get_predictions(img_path):
 script_path = os.path.dirname(os.path.realpath(__file__))
 
 model = InceptionV3(include_top=True, weights='imagenet')
-# model.save('{}/inceptionV3.h5'.format(script_path))
+model.save('{}/inceptionV3.h5'.format(script_path))
 
-print(decode_predictions(get_predictions("/Users/seanq/Downloads/frog.jpg")))
+# print(decode_predictions(get_predictions("/Users/seanq/Downloads/dog.jpeg")))

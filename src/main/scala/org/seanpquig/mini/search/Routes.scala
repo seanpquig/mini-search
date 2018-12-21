@@ -48,8 +48,7 @@ object Routes extends JsonSupport {
     } ~ path("indices") {
       complete(MiniSearch.indicesResponse())
     } ~ path("vision_upload") {
-      val testArray = Nd4j.zeros(1, 3, 299, 299)
-      complete(imgTagger.predictTags(testArray))
+      complete(imgTagger.imageToTags("/Users/seanq/Downloads/dog.jpeg"))
     }
   }
 
