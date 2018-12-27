@@ -19,6 +19,5 @@ libraryDependencies ++= Seq(
   "org.rocksdb" % "rocksdbjni" % "5.7.3",
   "org.deeplearning4j" % "deeplearning4j-core" % deepLearning4jVersion,
   "org.deeplearning4j" % "deeplearning4j-modelimport" % deepLearning4jVersion,
-  "org.nd4j" % "nd4j-native-platform" % deepLearning4jVersion,
-  "com.twelvemonkeys.imageio" % "imageio-core" % "3.1.1"
+  "org.nd4j" % "nd4j-native-platform" % deepLearning4jVersion
 )
