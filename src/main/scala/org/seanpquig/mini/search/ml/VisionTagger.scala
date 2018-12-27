@@ -14,16 +14,39 @@ case class ImagenetClass(name: String, description: String)
 
 case class ImagenetPrediction(name: String, description: String, prob: Double)
 
+class InceptionVisionTagger(override val modelPath: String) extends VisionTagger {
+  override def imgWidth: Int = 299
+  override def imgHeight: Int = imgWidth
+}
 
-class ImageVisionTagger(modelPath: String) extends DefaultJsonProtocol {
+class XceptionVisionTagger(override val modelPath: String) extends VisionTagger {
+  override def imgWidth = 299
+  override def imgHeight = imgWidth
+}
 
-  private val model: ComputationGraph = KerasModelImport.importKerasModelAndWeights(
-    modelPath, Array(299, 299, 3), false
+class NASNetVisionTagger(override val modelPath: String) extends VisionTagger {
+  override def imgWidth = 331
+  override def imgHeight = imgWidth
+}
+
+class NASNetMobileTagger(override val modelPath: String) extends VisionTagger {
+  override def imgWidth = 224
+  override def imgHeight = imgWidth
+}
+
+trait VisionTagger extends DefaultJsonProtocol {
+  def modelPath: String
+
+  def imgWidth: Int
+  def imgHeight: Int
+
+  private val graph: ComputationGraph = KerasModelImport.importKerasModelAndWeights(
+    modelPath, Array(imgWidth, imgHeight, 3), false
   )
 
   val imagenetClasses: List[ImagenetClass] = loadImagenetClasses(Config.imagenetClassPath)
 
-  def loadImagenetClasses(filePath: String): List[ImagenetClass] = {
+  private def loadImagenetClasses(filePath: String): List[ImagenetClass] = {
     val bufferedSource = Source.fromFile(Config.imagenetClassPath)
     val jsonStr = bufferedSource.mkString
     bufferedSource.close()
@@ -45,12 +68,11 @@ class ImageVisionTagger(modelPath: String) extends DefaultJsonProtocol {
   }
 
   def predictTags(img: INDArray): Array[ImagenetPrediction] = {
-    val preds = model.outputSingle(img).toDoubleVector
+    val preds = graph.outputSingle(img).toDoubleVector
 
     preds.zip(imagenetClasses)
       .map { case (p, cls) => ImagenetPrediction(cls.name, cls.description, p) }
       .filter(_.prob > 0.01)
       .sortWith(_.prob > _.prob)
   }
-
 }

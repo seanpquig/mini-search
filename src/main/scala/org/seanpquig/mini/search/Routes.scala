@@ -3,9 +3,8 @@ package org.seanpquig.mini.search
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import com.typesafe.scalalogging.Logger
-import org.nd4j.linalg.factory.Nd4j
 import org.seanpquig.mini.search.core._
-import org.seanpquig.mini.search.ml.ImageVisionTagger
+import org.seanpquig.mini.search.ml.InceptionVisionTagger
 
 object Routes extends JsonSupport {
 
@@ -33,7 +32,7 @@ object Routes extends JsonSupport {
     }
   }
 
-  private val imgTagger = new ImageVisionTagger(Config.modelPath)
+  private val imgTagger = new InceptionVisionTagger(Config.modelPath)
 
   def indexingRoutes: Route = ignoreTrailingSlash {
     path("index" / Segment) { idxName =>
@@ -48,7 +47,7 @@ object Routes extends JsonSupport {
     } ~ path("indices") {
       complete(MiniSearch.indicesResponse())
     } ~ path("vision_upload") {
-      complete(imgTagger.imageToTags("/Users/seanq/Downloads/dog.jpeg"))
+      complete(imgTagger.imageToTags("/Users/seanq/Downloads/cat.jpg"))
     }
   }
 
