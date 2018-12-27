@@ -1,12 +1,9 @@
 package org.seanpquig.mini.search.ml
 
-import java.io.File
-
-import org.datavec.image.loader.ImageLoader
+import org.datavec.image.loader.NativeImageLoader
 import org.deeplearning4j.nn.graph.ComputationGraph
 import org.deeplearning4j.nn.modelimport.keras.KerasModelImport
 import org.nd4j.linalg.api.ndarray.INDArray
-import org.nd4j.linalg.factory.Nd4j
 import org.seanpquig.mini.search.Config
 import spray.json._
 
@@ -14,15 +11,14 @@ import scala.io.Source
 
 
 case class ImagenetClass(name: String, description: String)
+
 case class ImagenetPrediction(name: String, description: String, prob: Double)
 
 
 class ImageVisionTagger(modelPath: String) extends DefaultJsonProtocol {
 
   private val model: ComputationGraph = KerasModelImport.importKerasModelAndWeights(
-    modelPath,
-    Array(299, 299, 3),
-    false
+    modelPath, Array(299, 299, 3), false
   )
 
   val imagenetClasses: List[ImagenetClass] = loadImagenetClasses(Config.imagenetClassPath)
@@ -33,24 +29,27 @@ class ImageVisionTagger(modelPath: String) extends DefaultJsonProtocol {
     bufferedSource.close()
 
     val rawData = jsonStr.parseJson.convertTo[Map[String, List[String]]]
-    rawData.toList.sortBy(_._1).map { case (_, l) =>
-      ImagenetClass(name = l.head, description = l(1))
-    }
+    rawData.toList.map { case (k, v) => (k.toInt, v) }
+      .sortBy(_._1)
+      .map { case (_, l) => ImagenetClass(name = l(0), description = l(1))}
   }
+
+  def preProcessImage(img: INDArray): INDArray = img.div(127.5).sub(1)
 
   def imageToTags(imgPath: String): Array[ImagenetPrediction] = {
-    val imgLoader = new ImageLoader(299, 299, 3)
-    val imgArray = imgLoader.asImageMatrix(new File(imgPath)).getImage
+    val imgLoader = new NativeImageLoader(299, 299, 3)
+    val img = imgLoader.asMatrix(imgPath)
+    val preProcess = preProcessImage(img)
 
-    predictTags(imgArray)
+    predictTags(preProcess)
   }
 
-  def predictTags(imgArray: INDArray): Array[ImagenetPrediction] = {
-    val singleImgDataset = Nd4j.repeat(imgArray, 1)
-    val preds = model.outputSingle(singleImgDataset).toDoubleVector
+  def predictTags(img: INDArray): Array[ImagenetPrediction] = {
+    val preds = model.outputSingle(img).toDoubleVector
 
     preds.zip(imagenetClasses)
       .map { case (p, cls) => ImagenetPrediction(cls.name, cls.description, p) }
+      .filter(_.prob > 0.01)
       .sortWith(_.prob > _.prob)
   }
 
