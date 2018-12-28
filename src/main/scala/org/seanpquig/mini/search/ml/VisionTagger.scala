@@ -20,18 +20,18 @@ class InceptionVisionTagger(override val modelPath: String) extends VisionTagger
 }
 
 class XceptionVisionTagger(override val modelPath: String) extends VisionTagger {
-  override def imgWidth = 299
-  override def imgHeight = imgWidth
+  override def imgWidth: Int = 299
+  override def imgHeight: Int = imgWidth
 }
 
 class NASNetVisionTagger(override val modelPath: String) extends VisionTagger {
-  override def imgWidth = 331
-  override def imgHeight = imgWidth
+  override def imgWidth: Int = 331
+  override def imgHeight: Int = imgWidth
 }
 
 class NASNetMobileTagger(override val modelPath: String) extends VisionTagger {
-  override def imgWidth = 224
-  override def imgHeight = imgWidth
+  override def imgWidth: Int = 224
+  override def imgHeight: Int = imgWidth
 }
 
 trait VisionTagger extends DefaultJsonProtocol {
