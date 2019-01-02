@@ -38,8 +38,8 @@ trait DocumentAddable {
   * It is backed by the persistent key-value store RocksDB.
   * @param docs initial documents to include in store
   */
-case class DocumentStore(docs: Seq[TextDoc] = Seq()) extends DocumentAddable {
-  import DocumentStore._
+case class TextDocStore(docs: Seq[TextDoc] = Seq()) extends DocumentAddable {
+  import TextDocStore._
 
   // Add constructor documents
   addDocs(docs)
@@ -66,7 +66,7 @@ case class DocumentStore(docs: Seq[TextDoc] = Seq()) extends DocumentAddable {
   }
 }
 
-object DocumentStore {
+object TextDocStore {
   // Setup RocksDB
   val db: RocksDB = RocksDB.open(s"${Config.dataDir}/doc_stores")
 }

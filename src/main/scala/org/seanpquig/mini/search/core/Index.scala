@@ -24,7 +24,7 @@ case class Index(
     docs: Seq[Document],
     analyzers: Seq[Analyzer] = Seq(StandardAnalyzer())) extends DocumentAddable {
 
-  private val docStore: DocumentStore = DocumentStore()
+  private val docStore: TextDocStore = TextDocStore()
   private val analyzerPipeline = AnalyzerPipeline(analyzers)
   private val termDictionary = TermDictionary(analyzerPipeline = analyzerPipeline)
 
