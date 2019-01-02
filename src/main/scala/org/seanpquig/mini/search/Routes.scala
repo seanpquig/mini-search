@@ -13,7 +13,7 @@ object Routes extends JsonSupport {
   def all: Route = ignoreTrailingSlash {
     pathSingleSlash {
       complete("Mini Search")
-    } ~ searchRoutes ~ indexingRoutes
+    } ~ searchRoutes ~ indexingRoutes ~ visionRoutes
   }
 
   def searchRoutes: Route = path("search" / Segment) { idxName =>
@@ -30,8 +30,6 @@ object Routes extends JsonSupport {
     }
   }
 
-  private val imgTagger = new InceptionVisionTagger(Config.modelPath)
-
   def indexingRoutes: Route = path("index" / Segment) { idxName =>
     get {
       complete(s"Index info for $idxName")
@@ -43,8 +41,16 @@ object Routes extends JsonSupport {
     }
   } ~ path("indices") {
     complete(MiniSearch.indicesResponse())
-  } ~ path("vision_upload") {
-    complete(imgTagger.imageToTags("/Users/seanq/Downloads/cat.jpg"))
+  }
+
+  private val imgTagger = new InceptionVisionTagger(Config.modelPath)
+
+  def visionRoutes: Route = pathPrefix("vision") {
+    path("predict") {
+      val imgPath = "/Users/seanq/Downloads/cat.jpg"
+      val preds = imgTagger.imageToTags(imgPath)
+      complete(preds)
+    }
   }
 
 }
