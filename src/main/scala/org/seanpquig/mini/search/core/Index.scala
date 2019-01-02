@@ -2,8 +2,8 @@ package org.seanpquig.mini.search.core
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 
-import com.typesafe.config.{Config, ConfigFactory}
 import org.rocksdb.RocksDB
+import org.seanpquig.mini.search.Config
 import org.seanpquig.mini.search.core.analyzers.{Analyzer, AnalyzerPipeline, StandardAnalyzer}
 
 case class Term(token: String)
@@ -24,14 +24,14 @@ case class Index(
     docs: Seq[Document],
     analyzers: Seq[Analyzer] = Seq(StandardAnalyzer())) extends DocumentAddable {
 
-  private val docStore: DocumentStore = DocumentStore()
+  private val docStore: TextDocStore = TextDocStore()
   private val analyzerPipeline = AnalyzerPipeline(analyzers)
   private val termDictionary = TermDictionary(analyzerPipeline = analyzerPipeline)
 
   // Add constructor documents
   addDocs(docs)
 
-  def search(query: String): Iterable[Document] = {
+  def search(query: String): Iterable[TextDoc] = {
     val queryTerms = analyzerPipeline.analyze(query)
     val postings = termDictionary.getPostings(queryTerms)
     docStore.getDocs(postings.docsIds)
@@ -77,8 +77,9 @@ case class TermDictionary(
   }
 
   def addDoc(doc: Document): Unit = {
-    val termPostingsMap: Map[Term, PostingsList] = analyzerPipeline.analyze(doc.text)
-      .map(term => (term, doc.id))
+    val termPostingsMap: Map[Term, PostingsList] = (doc match {
+      case TextDoc(text, _) => analyzerPipeline.analyze(text)
+    }).map(term => (term, doc.id))
       .groupBy(_._1)
       .map { case (term, termIdPairs) =>
         term -> PostingsList(termIdPairs.map(_._2).toSet)
@@ -102,9 +103,6 @@ case class TermDictionary(
 }
 
 object TermDictionary {
-  val config: Config = ConfigFactory.load()
-  val dataDir: String = config.getString("dataDir")
-
   // Setup RocksDB
-  val db: RocksDB = RocksDB.open(s"$dataDir/term_dictionaries")
+  val db: RocksDB = RocksDB.open(s"${Config.dataDir}/term_dictionaries")
 }

@@ -1,6 +1,7 @@
 package org.seanpquig.mini.search.core
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import org.seanpquig.mini.search.ml.ImagenetPrediction
 import spray.json._
 
 /**
@@ -12,31 +13,33 @@ import spray.json._
 trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val searchRequestFormat: RootJsonFormat[SearchRequest] = jsonFormat2(SearchRequest)
 
-  implicit object DocumentJsonFormat extends RootJsonFormat[Document] {
-    def write(d: Document) = JsObject(
+  implicit object TextDocJsonFormat extends RootJsonFormat[TextDoc] {
+    def write(d: TextDoc) = JsObject(
       "id" -> JsString(d.id),
       "text" -> JsString(d.text),
       "title" -> JsString(d.title.getOrElse(""))
     )
 
-    def read(value: JsValue): Document = {
+    def read(value: JsValue): TextDoc = {
       value.asJsObject.getFields("text", "title") match {
-        case Seq(JsString(text), JsString(title)) => Document(text = text, title = Option(title))
+        case Seq(JsString(text), JsString(title)) => TextDoc(text = text, title = Option(title))
         case _ => deserializationError("Document object expected")
       }
     }
   }
+
   implicit val searchResponseFormat: RootJsonFormat[SearchResponse] = jsonFormat2(SearchResponse)
   implicit val indexRequestFormat: RootJsonFormat[IndexRequest] = jsonFormat1(IndexRequest)
   implicit val indexInfoFormat: RootJsonFormat[IndexInfo] = jsonFormat2(IndexInfo)
   implicit val indicesResponseFormat: RootJsonFormat[IndicesResponse] = jsonFormat1(IndicesResponse)
+  implicit val imagenetPredFormat: RootJsonFormat[ImagenetPrediction] = jsonFormat3(ImagenetPrediction)
 }
 
 case class SearchRequest(query: String, limit: Int)
 
-case class SearchResponse(message: String, docs: Iterable[Document])
+case class SearchResponse(message: String, docs: Iterable[TextDoc])
 
-case class IndexRequest(docs: Iterable[Document])
+case class IndexRequest(docs: Iterable[TextDoc])
 
 case class IndexResponse(message: String)
 

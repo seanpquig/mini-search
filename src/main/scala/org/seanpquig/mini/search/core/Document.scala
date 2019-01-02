@@ -2,16 +2,20 @@ package org.seanpquig.mini.search.core
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 
+import org.rocksdb.RocksDB
+import org.seanpquig.mini.search.Config
+
 import scala.util.hashing.MurmurHash3
 
-import com.typesafe.config.{Config, ConfigFactory}
-import org.rocksdb.RocksDB
+sealed trait Document {
+  val id: String
+}
 
-case class Document(
+case class TextDoc(
     text: String,
-    title: Option[String] = None) {
+    title: Option[String] = None) extends Document {
 
-  val id: String = {
+  override val id: String = {
     val stringToHash = s"${title.getOrElse("")}^%&$text"
     val hash = MurmurHash3.stringHash(stringToHash)
     Math.abs(hash).toString
@@ -34,18 +38,18 @@ trait DocumentAddable {
   * It is backed by the persistent key-value store RocksDB.
   * @param docs initial documents to include in store
   */
-case class DocumentStore(docs: Seq[Document] = Seq()) extends DocumentAddable {
-  import DocumentStore._
+case class TextDocStore(docs: Seq[TextDoc] = Seq()) extends DocumentAddable {
+  import TextDocStore._
 
   // Add constructor documents
   addDocs(docs)
 
-  def getDocs(ids: Iterable[String]): Iterable[Document] = ids.flatMap(getDoc)
+  def getDocs(ids: Iterable[String]): Iterable[TextDoc] = ids.flatMap(getDoc)
 
-  def getDoc(id: String): Option[Document] = {
+  def getDoc(id: String): Option[TextDoc] = {
     Option(db.get(id.getBytes)).map { bytes =>
       val ois = new ObjectInputStream(new ByteArrayInputStream(bytes))
-      val doc = ois.readObject().asInstanceOf[Document]
+      val doc = ois.readObject().asInstanceOf[TextDoc]
       ois.close()
       doc
     }
@@ -62,10 +66,7 @@ case class DocumentStore(docs: Seq[Document] = Seq()) extends DocumentAddable {
   }
 }
 
-object DocumentStore {
-  val config: Config = ConfigFactory.load()
-  val dataDir: String = config.getString("dataDir")
-
+object TextDocStore {
   // Setup RocksDB
-  val db: RocksDB = RocksDB.open(s"$dataDir/doc_stores")
+  val db: RocksDB = RocksDB.open(s"${Config.dataDir}/doc_stores")
 }

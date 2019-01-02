@@ -1,6 +1,6 @@
 package org.seanpquig.mini.search
 
-import org.seanpquig.mini.search.core.{Document, Index, IndexInfo, IndicesResponse}
+import org.seanpquig.mini.search.core._
 
 /**
   * Entry point into all aspects and behavior of the search engine.
@@ -11,9 +11,9 @@ object MiniSearch {
   private val testIndex = Index(
     name = "test-index",
     docs = List(
-      Document("The cat in the hat jumped over the hill.", title = Option("The Cat in the Hat")),
-      Document("Cute animals everywhere; cats, dogs, lambs."),
-      Document("Are we over the proverbial quantitative easing hill?")
+      TextDoc("The cat in the hat jumped over the hill.", title = Option("The Cat in the Hat")),
+      TextDoc("Cute animals everywhere; cats, dogs, lambs."),
+      TextDoc("Are we over the proverbial quantitative easing hill?")
     )
   )
 
@@ -27,11 +27,11 @@ object MiniSearch {
     * @param query
     * @return optional result documents
     */
-  def search(idxName: String, query: String): Option[Iterable[Document]] = {
+  def search(idxName: String, query: String): Option[Iterable[TextDoc]] = {
     indexLookup.get(idxName).map(_.search(query))
   }
 
-  def index(idxName: String, docs: Iterable[Document]) = ???
+  def index(idxName: String, docs: Iterable[TextDoc]) = ???
 
   def indicesResponse(): IndicesResponse = IndicesResponse(
     indexLookup.map { case (_, idx) =>

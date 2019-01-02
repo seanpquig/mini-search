@@ -1,5 +1,10 @@
+# Scala
 *.class
 *.log
 .idea
 project
 target
+
+# Python
+*.h5
+
